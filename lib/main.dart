@@ -7,7 +7,9 @@ import 'package:mobile_assistant_ia/features/auth/presentation/bloc/auth_bloc.da
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initDependencies();
+  
+  await initDependencies();   // Initialisation de tous les services + repositories + blocs
+
   runApp(const MyApp());
 }
 
