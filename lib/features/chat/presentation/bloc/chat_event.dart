@@ -14,4 +14,6 @@ class SendMessage extends ChatEvent {
 
 class ResetChat extends ChatEvent {
   const ResetChat();
+  @override
+  List<Object> get props => [];
 }

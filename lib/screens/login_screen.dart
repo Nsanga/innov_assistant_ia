@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../features/auth/presentation/bloc/auth_bloc.dart';
 import '../core/constants/app_colors.dart';
+import '../widgets/hero_section.dart';
+import '../widgets/login_card.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,10 +14,17 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController();
+  final _emailController = TextEditingController(text: '');
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _rememberMe = true;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,95 +32,69 @@ class _LoginScreenState extends State<LoginScreen> {
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthSuccess) {
-            context.go('/agenda'); // ou /chat selon ton flow
+            context.go('/chat');
           } else if (state is AuthFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red.shade700,
+                behavior: SnackBarBehavior.floating,
+              ),
             );
           }
         },
         builder: (context, state) {
-          return SingleChildScrollView(
-            child: Container(
-              height: MediaQuery.of(context).size.height,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFF1E2937), Color(0xFF334155)],
-                ),
-              ),
-              child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 40),
-                      const Text(
-                        "Connexion",
-                        style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
-                      ),
-                      const Text(
-                        "Entrez vos identifiants",
-                        style: TextStyle(fontSize: 16, color: Colors.white70),
-                      ),
-                      const SizedBox(height: 40),
-
-                      TextField(
-                        controller: _emailController,
-                        decoration: const InputDecoration(
-                          labelText: "Adresse e-mail",
-                          prefixIcon: Icon(Icons.email),
-                        ),
-                        keyboardType: TextInputType.emailAddress,
-                      ),
-                      const SizedBox(height: 20),
-
-                      TextField(
-                        controller: _passwordController,
-                        obscureText: _obscurePassword,
-                        decoration: InputDecoration(
-                          labelText: "Mot de passe",
-                          prefixIcon: const Icon(Icons.lock),
-                          suffixIcon: IconButton(
-                            icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
-                            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+          return Container(
+            decoration: const BoxDecoration(gradient: AppColors.loginGradient),
+            child: SafeArea(
+              child: SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.of(context).size.height -
+                        MediaQuery.of(context).padding.top -
+                        MediaQuery.of(context).padding.bottom,
+                  ),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const HeroSection(),
+                        const SizedBox(height: 32),
+                        Expanded(
+                          child: LoginCard(
+                            emailController: _emailController,
+                            passwordController: _passwordController,
+                            obscurePassword: _obscurePassword,
+                            rememberMe: _rememberMe,
+                            isLoading: state is AuthLoading,
+                            onToggleObscure: () =>
+                                setState(() => _obscurePassword = !_obscurePassword),
+                            onToggleRemember: (v) =>
+                                setState(() => _rememberMe = v ?? true),
+                            onSubmit: () {
+                              context.read<AuthBloc>().add(
+                                    LoginSubmitted(
+                                      _emailController.text.trim(),
+                                      _passwordController.text,
+                                    ),
+                                  );
+                            },
+                            onForgotPassword: () {
+                              // TODO: Implémenter la récupération de mot de passe
+                            },
+                            onOAuthGoogle: () {
+                              // TODO: Implémenter l'authentification Google
+                            },
+                            onOAuthMicrosoft: () {
+                              // TODO: Implémenter l'authentification Microsoft
+                            },
+                            onRequestAccess: () {
+                              // TODO: Implémenter la demande d'accès
+                            },
                           ),
                         ),
-                      ),
-
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Checkbox(
-                            value: _rememberMe,
-                            onChanged: (v) => setState(() => _rememberMe = v!),
-                          ),
-                          const Text("Se souvenir de moi", style: TextStyle(color: Colors.white)),
-                        ],
-                      ),
-
-                      const SizedBox(height: 32),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: state is AuthLoading
-                              ? null
-                              : () {
-                                  context.read<AuthBloc>().add(
-                                        LoginSubmitted(
-                                          _emailController.text.trim(),
-                                          _passwordController.text,
-                                        ),
-                                      );
-                                },
-                          child: state is AuthLoading
-                              ? const CircularProgressIndicator(color: Colors.white)
-                              : const Text("Se connecter", style: TextStyle(fontSize: 16)),
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

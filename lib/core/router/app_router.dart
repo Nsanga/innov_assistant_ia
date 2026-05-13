@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_assistant_ia/core/di/injection.dart';
 import 'package:mobile_assistant_ia/features/auth/presentation/bloc/auth_bloc.dart';
-import '../screens/login_screen.dart';
-import '../screens/chat_screen.dart';
-import '../screens/agenda_screen.dart';
-import '../screens/profile_screen.dart';
+import '../../screens/login_screen.dart';
+import '../../screens/chat_screen.dart';
+import '../../screens/agenda_screen.dart';
+import '../../screens/profile_screen.dart';
 import 'app_shell.dart';
 
 final GoRouter appRouter = GoRouter(

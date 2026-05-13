@@ -36,5 +36,37 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
     }
   }
 
-  
+  Future<void> _onUpdateEvent(UpdateEvent event, Emitter<AgendaState> emit) async {
+    try {
+      final updatedEvent = await repository.updateEvent(event.eventId, event.event);
+      
+      if (state is AgendaLoaded) {
+        final currentEvents = (state as AgendaLoaded).events;
+        final updatedEvents = currentEvents.map((e) => e.id == updatedEvent.id ? updatedEvent : e).toList();
+        emit(AgendaLoaded(updatedEvents));
+      } else {
+        final events = await repository.getEvents(range: 'week');
+        emit(AgendaLoaded(events));
+      }
+    } catch (e) {
+      emit(AgendaError(e.toString()));
+    }
+  }
+
+  Future<void> _onDeleteEvent(DeleteEvent event, Emitter<AgendaState> emit) async {
+    try {
+      await repository.deleteEvent(event.eventId);
+      
+      if (state is AgendaLoaded) {
+        final currentEvents = (state as AgendaLoaded).events;
+        final updatedEvents = currentEvents.where((e) => e.id != event.eventId).toList();
+        emit(AgendaLoaded(updatedEvents));
+      } else {
+        final events = await repository.getEvents(range: 'week');
+        emit(AgendaLoaded(events));
+      }
+    } catch (e) {
+      emit(AgendaError(e.toString()));
+    }
+  }
 }

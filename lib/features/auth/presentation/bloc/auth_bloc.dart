@@ -36,8 +36,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  void _onLogoutRequested(LogoutRequested event, Emitter<AuthState> emit) {
-    repository.logout();
+  void _onLogoutRequested(LogoutRequested event, Emitter<AuthState> emit) async {
+    await repository.logout();
     emit(AuthInitial());
   }
 }

@@ -1,13 +1,17 @@
 import 'package:dio/dio.dart';
+import 'package:mobile_assistant_ia/core/di/injection.dart';
 import 'package:mobile_assistant_ia/services/api/api_client.dart';
 import 'package:mobile_assistant_ia/services/api/api_endpoints.dart';
+import 'package:mobile_assistant_ia/services/storage/secure_storage.dart';
+
 import '../models/login_response.dart';
 import '../models/user_model.dart';
 
 class AuthRepository {
   final ApiClient _apiClient;
+  final SecureStorage _storage;
 
-  AuthRepository(this._apiClient);
+  AuthRepository(this._apiClient) : _storage = getIt<SecureStorage>();
 
   Future<LoginResponse> login(String email, String password) async {
     try {
@@ -17,17 +21,12 @@ class AuthRepository {
       );
 
       final loginResponse = LoginResponse.fromJson(response.data);
-      
-      // Sauvegarde du token
-      final storage = getIt<SecureStorage>();
-      await storage.write('access_token', loginResponse.accessToken);
+
+      await _storage.write('access_token', loginResponse.accessToken);
 
       return loginResponse;
     } on DioException catch (e) {
-      if (e.response?.data != null) {
-        throw Exception(e.response?.data['detail']?.toString() ?? 'Erreur de connexion');
-      }
-      throw Exception('Erreur réseau');
+      throw Exception(e.response?.data?['detail']?.toString() ?? 'Erreur de connexion');
     }
   }
 
@@ -41,6 +40,6 @@ class AuthRepository {
   }
 
   Future<void> logout() async {
-    await _apiClient.dio.storage.delete(key: 'access_token');
+    await _storage.delete('access_token');
   }
 }
