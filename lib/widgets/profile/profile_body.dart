@@ -35,13 +35,13 @@ class ProfileBody extends StatelessWidget {
 
   String get _sinceAgo {
     if (user.createdAt != null) {
-      final months = DateTime.now().difference(user.createdAt!).inDays ~/ 30;
+      final months =
+          DateTime.now().difference(user.createdAt!).inDays ~/ 30;
       return 'Il y a $months mois';
     }
     return 'Il y a 13 mois';
   }
 
-  // Liste des activités récentes
   List<Map<String, dynamic>> get _activities => [
         {
           'icon': Icons.chat_bubble_outline_rounded,
@@ -73,34 +73,77 @@ class ProfileBody extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Breadcrumb ───────────────────────────────────────────────
+          // ── Breadcrumb ─────────────────────────────────────────────
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12),
+            padding: const EdgeInsets.only(top: 12, bottom: 16),
             child: Row(
-              children: [
-                const Text(
-                  'Compte',
-                  style: TextStyle(
-                      fontSize: 13, color: AppColors.textSecondary),
-                ),
-                const Padding(
+              children: const [
+                Text('Compte',
+                    style: TextStyle(
+                        fontSize: 13, color: AppColors.textSecondary)),
+                Padding(
                   padding: EdgeInsets.symmetric(horizontal: 6),
                   child: Icon(Icons.chevron_right,
                       size: 14, color: AppColors.textHint),
                 ),
-                const Text(
-                  'Mon profil',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+                Text('Mon profil',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w500,
+                    )),
               ],
             ),
           ),
 
-          // ── Header card ──────────────────────────────────────────────
+          // ── Titre + bouton modifier ─────────────────────────────────
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Mon profil',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Gérez vos informations personnelles.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Bouton modifier carré arrondi
+              GestureDetector(
+                onTap: onEdit,
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.textPrimary,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.edit_outlined,
+                      color: Colors.white, size: 18),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // ── Header card ─────────────────────────────────────────────
           ProfileHeader(
             user: user,
             onChat: onChat,
@@ -109,14 +152,14 @@ class ProfileBody extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // ── Info grid 2×2 ────────────────────────────────────────────
+          // ── Info grid 2×2 ───────────────────────────────────────────
           GridView.count(
             crossAxisCount: 2,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
-            childAspectRatio: 1.3,
+            childAspectRatio: 1.45,
             children: [
               InfoCard(
                 icon: Icons.work_outline_rounded,
@@ -151,7 +194,7 @@ class ProfileBody extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          // ── Activité récente ─────────────────────────────────────────
+          // ── Activité récente ────────────────────────────────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -181,63 +224,41 @@ class ProfileBody extends StatelessWidget {
 
           const SizedBox(height: 10),
 
-          // Liste des activités
-          ...List.generate(_activities.length, (index) {
-            final activity = _activities[index];
-            return ActivityItem(
-              icon: activity['icon'] as IconData,
-              iconColor: activity['iconColor'] as Color,
-              title: activity['title'] as String,
-              subtitle: activity['subtitle'] as String,
-              timeAgo: activity['timeAgo'] as String,
-              onTap: onActivityTap != null
-                  ? () => onActivityTap!(index)
-                  : null,
-            );
-          }),
-
-          const SizedBox(height: 24),
-
-          // ── Boutons footer ───────────────────────────────────────────
-          Row(
-            children: [
-              // Exporter (outline)
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: onExport,
-                  icon: const Icon(Icons.download_outlined, size: 18),
-                  label: const Text('Exporter'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.textPrimary,
-                    side: const BorderSide(color: AppColors.border),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                    textStyle: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Modifier (filled noir)
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: onEdit,
-                  icon: const Icon(Icons.edit_outlined, size: 18),
-                  label: const Text('Modifier'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.textPrimary,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                    textStyle: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ),
-            ],
+          // Container blanc arrondi qui englobe les activités
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border, width: 0.5),
+            ),
+            child: Column(
+              children: List.generate(_activities.length, (index) {
+                final activity = _activities[index];
+                final isLast = index == _activities.length - 1;
+                return Column(
+                  children: [
+                    ActivityItem(
+                      icon: activity['icon'] as IconData,
+                      iconColor: activity['iconColor'] as Color,
+                      title: activity['title'] as String,
+                      subtitle: activity['subtitle'] as String,
+                      timeAgo: activity['timeAgo'] as String,
+                      onTap: onActivityTap != null
+                          ? () => onActivityTap!(index)
+                          : null,
+                    ),
+                    if (!isLast)
+                      const Divider(
+                        height: 1,
+                        thickness: 0.5,
+                        indent: 60,
+                        endIndent: 16,
+                        color: AppColors.border,
+                      ),
+                  ],
+                );
+              }),
+            ),
           ),
 
           const SizedBox(height: 32),

@@ -19,9 +19,7 @@ class ProfileHeader extends StatelessWidget {
     if (parts.length >= 2) {
       return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
     }
-    return user.fullName.isNotEmpty
-        ? user.fullName[0].toUpperCase()
-        : 'U';
+    return user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : 'U';
   }
 
   @override
@@ -34,55 +32,134 @@ class ProfileHeader extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Avatar
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              gradient: AppColors.assistantAvatarGradient, // Ajout du gradient ici aussi
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Center(
-              child: Text(
-                _initials,
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                  letterSpacing: -0.5,
+          // ── Avatar à gauche + infos à droite ───────────────────────
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Avatar carré arrondi avec gradient bleu
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  gradient: AppColors.assistantAvatarGradient,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Center(
+                  child: Text(
+                    _initials,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
 
-          const SizedBox(height: 12),
+              const SizedBox(width: 14),
 
-          // Nom
-          Text(
-            user.fullName,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-              letterSpacing: -0.3,
-            ),
-          ),
+              // Infos
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Nom + badge vérifié
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            user.fullName,
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                              letterSpacing: -0.3,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        const Icon(Icons.verified_rounded,
+                            color: AppColors.primary, size: 18),
+                      ],
+                    ),
 
-          const SizedBox(height: 2),
+                    const SizedBox(height: 3),
 
-          // Email
-          Text(
-            user.email,
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.textOnDarkMuted,
-            ),
+                    // Email
+                    Text(
+                      user.email,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textOnDarkMuted,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    // Statut + localisation sur la même ligne
+                    Row(
+                      children: [
+                        // Statut actif
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: AppColors.success.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: const BoxDecoration(
+                                  color: AppColors.success,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Text(
+                                'Actif',
+                                style: TextStyle(
+                                  color: AppColors.success,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(width: 10),
+
+                        // Localisation
+                        const Icon(Icons.location_on_outlined,
+                            size: 12, color: AppColors.textOnDarkMuted),
+                        const SizedBox(width: 3),
+                        const Text(
+                          'Douala, CM',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textOnDarkMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
 
           const SizedBox(height: 16),
 
-          // Boutons Chat / Action
+          // ── Boutons Chat / Action ───────────────────────────────────
           Row(
             children: [
               // Chat (outline blanc)
@@ -91,25 +168,29 @@ class ProfileHeader extends StatelessWidget {
                   onPressed: onChat,
                   icon: const Icon(Icons.chat_bubble_outline_rounded,
                       size: 16, color: Colors.white),
-                  label: const Text('Chat',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600)),
+                  label: const Text(
+                    'Chat',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(
-                        color: Colors.white38, width: 1),
+                    side: const BorderSide(color: Colors.white24, width: 1),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
               ),
+
               const SizedBox(width: 10),
-              // Action (gradient button)
-              Expanded( // ✅ Ajouter Expanded ici
+
+              // + Action (gradient bleu)
+              Expanded(
                 child: Container(
-                  height: 48, // ✅ Supprimer width: double.infinity
+                  height: 46,
                   decoration: BoxDecoration(
                     gradient: AppColors.assistantAvatarGradient,
                     borderRadius: BorderRadius.circular(12),
@@ -124,7 +205,7 @@ class ProfileHeader extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.add, size: 16, color: Colors.white),
-                            SizedBox(width: 8),
+                            SizedBox(width: 6),
                             Text(
                               'Action',
                               style: TextStyle(
