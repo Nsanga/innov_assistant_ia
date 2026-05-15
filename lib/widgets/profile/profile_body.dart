@@ -237,15 +237,18 @@ class ProfileBody extends StatelessWidget {
                 final isLast = index == _activities.length - 1;
                 return Column(
                   children: [
-                    ActivityItem(
-                      icon: activity['icon'] as IconData,
-                      iconColor: activity['iconColor'] as Color,
-                      title: activity['title'] as String,
-                      subtitle: activity['subtitle'] as String,
-                      timeAgo: activity['timeAgo'] as String,
-                      onTap: onActivityTap != null
-                          ? () => onActivityTap!(index)
-                          : null,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      child: ActivityItem(
+                        icon: activity['icon'] as IconData,
+                        iconColor: activity['iconColor'] as Color,
+                        title: activity['title'] as String,
+                        subtitle: activity['subtitle'] as String,
+                        timeAgo: activity['timeAgo'] as String,
+                        onTap: onActivityTap != null
+                            ? () => onActivityTap!(index)
+                            : null,
+                      ),
                     ),
                     if (!isLast)
                       const Divider(

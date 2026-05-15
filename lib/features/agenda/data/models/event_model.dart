@@ -35,9 +35,11 @@ class EventModel extends Equatable {
 
   factory EventModel.fromJson(Map<String, dynamic> json) {
     return EventModel(
-      id: json['id'] ?? '',
+      id: json['id']?.toString() ?? '',
       title: json['title'] ?? '',
-      date: DateTime.tryParse(json['date'] ?? '') ?? DateTime.now(),
+      date: DateTime.tryParse(json['date'] ?? '') != null
+          ? DateTime.parse(json['date']).toLocal() // Normaliser la date
+          : DateTime.now(),
       time: json['time'] ?? '',
       location: json['location'],
       participants: json['participants'],

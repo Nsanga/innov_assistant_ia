@@ -9,6 +9,11 @@ import 'package:mobile_assistant_ia/core/theme/app_theme.dart';
 import 'package:mobile_assistant_ia/features/auth/presentation/bloc/auth_bloc.dart';
 
 void main() async {
+  FlutterError.onError = (FlutterErrorDetails details) {
+    print('Flutter Error: ${details.exception}');
+    print('Stack trace: ${details.stack}');
+    FlutterError.presentError(details);
+  };
   WidgetsFlutterBinding.ensureInitialized();
 
   await initializeDateFormatting('fr_FR', null);

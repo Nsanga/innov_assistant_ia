@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile_assistant_ia/core/constants/app_colors.dart';
+import 'package:mobile_assistant_ia/core/extensions/date_time_extensions.dart';
 import '../features/agenda/presentation/bloc/agenda_bloc.dart';
 import '../features/agenda/data/models/event_model.dart';
 import '../widgets/agenda/calendar_header.dart';
@@ -73,15 +74,17 @@ class _AgendaScreenState extends State<AgendaScreen> {
           final allEvents = state is AgendaLoaded ? state.events : <EventModel>[];
 
           final todayEvents = allEvents
-              .where((e) => isSameDay(e.date, _selectedDay))
-              .toList();
+            .where((e) => e.date.dateOnly.isSameDate(_selectedDay.dateOnly))
+            .toList();
 
           final upcomingEvents = allEvents
-              .where((e) =>
-                  e.date.isAfter(_selectedDay) &&
-                  e.date.isBefore(
-                      _selectedDay.add(const Duration(days: 7))))
-              .toList();
+            .where((e) {
+              final eventDate = e.date.dateOnly;
+              final today = DateTime.now().dateOnly;
+              final weekLater = today.add(const Duration(days: 7));
+              return eventDate.isAfter(today) && eventDate.isBefore(weekLater);
+            })
+            .toList();
 
           return CustomScrollView(
             slivers: [
@@ -206,90 +209,108 @@ class _AgendaScreenState extends State<AgendaScreen> {
   }
 
   Widget _buildCalendar(List<EventModel> allEvents) {
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Column(
-        children: [
-          CalendarHeader(
-            focusedDay: _focusedDay,
-            onPreviousMonth: _previousMonth,
-            onNextMonth: _nextMonth,
-          ),
-          TableCalendar<EventModel>(
-            firstDay: DateTime.utc(2024, 1, 1),
-            lastDay: DateTime.utc(2027, 12, 31),
-            focusedDay: _focusedDay,
-            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-            calendarFormat: _calendarFormat,
-            eventLoader: (day) =>
-                allEvents.where((e) => isSameDay(e.date, day)).toList(),
-            onDaySelected: (selectedDay, focusedDay) {
-              setState(() {
-                _selectedDay = selectedDay;
-                _focusedDay = focusedDay;
-              });
-            },
-            onPageChanged: (focusedDay) {
-              setState(() => _focusedDay = focusedDay);
-            },
-            headerVisible: false,
-            daysOfWeekHeight: 32,
-            rowHeight: 44,
-            calendarStyle: CalendarStyle(
-              selectedDecoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              selectedTextStyle: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
-              ),
-              todayDecoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              todayTextStyle: const TextStyle(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
-              ),
-              defaultTextStyle: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 14,
-              ),
-              weekendTextStyle: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 14,
-              ),
-              outsideTextStyle: const TextStyle(
-                color: AppColors.textHint,
-                fontSize: 14,
-              ),
-              markerDecoration: const BoxDecoration(
-                color: AppColors.primary,
-                shape: BoxShape.circle,
-              ),
-              markerSize: 5,
-              markersMaxCount: 1,
-              cellMargin: const EdgeInsets.all(4),
+  return Container(
+    color: Colors.white,
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Column(
+      children: [
+        CalendarHeader(
+          focusedDay: _focusedDay,
+          onPreviousMonth: _previousMonth,
+          onNextMonth: _nextMonth,
+        ),
+        TableCalendar<EventModel>(
+          firstDay: DateTime.utc(2024, 1, 1),
+          lastDay: DateTime.utc(2027, 12, 31),
+          focusedDay: _focusedDay,
+          selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+          calendarFormat: _calendarFormat,
+          eventLoader: (day) =>
+              allEvents.where((e) => isSameDay(e.date, day)).toList(),
+          onDaySelected: (selectedDay, focusedDay) {
+            setState(() {
+              _selectedDay = selectedDay;
+              _focusedDay = focusedDay;
+            });
+          },
+          onPageChanged: (focusedDay) {
+            setState(() => _focusedDay = focusedDay);
+          },
+          headerVisible: false,
+          daysOfWeekHeight: 32,
+          rowHeight: 44,
+          calendarStyle: CalendarStyle(
+            // Désactiver les animations de decoration
+            selectedDecoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(12),
             ),
-            daysOfWeekStyle: const DaysOfWeekStyle(
-              weekdayStyle: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textSecondary,
-              ),
-              weekendStyle: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textSecondary,
-              ),
+            todayDecoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(12),
             ),
+            markerDecoration: const BoxDecoration(
+              color: AppColors.primary,
+              shape: BoxShape.circle,
+            ),
+            // Éviter les animations entre différentes formes
+            defaultDecoration: const BoxDecoration(),
+            weekendDecoration: const BoxDecoration(),
+            outsideDecoration: const BoxDecoration(),
           ),
-        ],
-      ),
-    );
-  }
+          // Désactiver l'animation du calendrier
+          calendarBuilders: CalendarBuilders(
+            // Personnaliser les cellules pour éviter l'AnimatedContainer
+            defaultBuilder: (context, day, focusedDay) {
+              return Container(
+                alignment: Alignment.center,
+                child: Text(
+                  '${day.day}',
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                  ),
+                ),
+              );
+            },
+            selectedBuilder: (context, day, focusedDay) {
+              return Container(
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '${day.day}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
+              );
+            },
+            todayBuilder: (context, day, focusedDay) {
+              return Container(
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '${day.day}',
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    ),
+  );
+}
 }
