@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mobile_assistant_ia/core/di/injection.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_assistant_ia/features/auth/presentation/bloc/auth_bloc.dart';
 import '../../screens/login_screen.dart';
 import '../../screens/chat_screen.dart';
@@ -11,14 +11,25 @@ import 'app_shell.dart';
 final GoRouter appRouter = GoRouter(
   initialLocation: '/login',
   redirect: (context, state) {
-    final authState = getIt<AuthBloc>().state;
+    // Utiliser le contexte pour accéder au Bloc
+    final authBloc = context.read<AuthBloc>();
+    final authState = authBloc.state;
     final isLoggedIn = authState is AuthSuccess;
     final isGoingToLogin = state.matchedLocation == '/login';
 
-    if (!isLoggedIn && !isGoingToLogin) return '/login';
-    if (isLoggedIn && isGoingToLogin) return '/chat';
+    debugPrint('🔄 Redirect check - isLoggedIn: $isLoggedIn, location: ${state.matchedLocation}');
 
-    return null;
+    if (!isLoggedIn && !isGoingToLogin) {
+      debugPrint('🔒 Non connecté, redirection vers /login');
+      return '/login';
+    }
+    
+    if (isLoggedIn && isGoingToLogin) {
+      debugPrint('✅ Déjà connecté, redirection vers /chat');
+      return '/chat';
+    }
+
+    return null; // Pas de redirection nécessaire
   },
   routes: [
     // Login (hors shell)

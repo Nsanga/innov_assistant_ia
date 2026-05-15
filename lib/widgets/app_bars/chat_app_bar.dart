@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../features/chat/presentation/bloc/chat_bloc.dart';
 
 class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const ChatAppBar({super.key});
+  const ChatAppBar({
+    super.key,
+    this.onNewConversation, // Callback 
+  });
+
+  final VoidCallback? onNewConversation;
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +23,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppColors.primary,
+              gradient: AppColors.assistantAvatarGradient,
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(Icons.auto_awesome_rounded,
@@ -66,7 +69,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       actions: [
         TextButton(
-          onPressed: () => context.read<ChatBloc>().add(const ResetChat()),
+          onPressed: onNewConversation ?? () {},
           child: const Text(
             'Nouvelle conversation',
             style: TextStyle(

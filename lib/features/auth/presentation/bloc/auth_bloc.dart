@@ -9,35 +9,47 @@ part 'auth_state.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository repository;
 
-  AuthBloc(this.repository) : super(AuthInitial()) {
+  AuthBloc(this.repository) : super(const AuthInitial()) {
     on<LoginSubmitted>(_onLoginSubmitted);
     on<LoadUser>(_onLoadUser);
     on<LogoutRequested>(_onLogoutRequested);
   }
 
-  Future<void> _onLoginSubmitted(LoginSubmitted event, Emitter<AuthState> emit) async {
-    emit(AuthLoading());
+  Future<void> _onLoginSubmitted(
+    LoginSubmitted event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading());
+    
     try {
-      await repository.login(event.email, event.password);
-      final user = await repository.getCurrentUser();
+      final user = await repository.login(event.email, event.password);
       emit(AuthSuccess(user));
     } catch (e) {
-      emit(AuthFailure(e.toString()));
+      emit(AuthFailure(
+        e.toString().replaceFirst('Exception: ', ''),
+      ));
     }
   }
 
-  Future<void> _onLoadUser(LoadUser event, Emitter<AuthState> emit) async {
-    emit(AuthLoading());
+  Future<void> _onLoadUser(
+    LoadUser event,
+    Emitter<AuthState> emit,
+  ) async {
+    // Ne pas afficher de loading si on vérifie juste le token
     try {
       final user = await repository.getCurrentUser();
       emit(AuthSuccess(user));
     } catch (e) {
-      emit(AuthFailure(e.toString()));
+      // Si pas de token valide, rester sur l'état initial (pas d'erreur)
+      emit(const AuthInitial());
     }
   }
 
-  void _onLogoutRequested(LogoutRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onLogoutRequested(
+    LogoutRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     await repository.logout();
-    emit(AuthInitial());
+    emit(const AuthInitial());
   }
 }

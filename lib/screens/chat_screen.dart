@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_assistant_ia/core/constants/app_colors.dart';
 import '../features/chat/presentation/bloc/chat_bloc.dart';
 import '../features/chat/data/models/chat_message.dart';
+import '../features/auth/presentation/bloc/auth_bloc.dart';
 import '../widgets/chat/welcome_placeholder.dart';
 import '../widgets/chat/user_bubble.dart';
 import '../widgets/chat/assistant_bubble.dart';
@@ -46,12 +47,22 @@ class _ChatScreenState extends State<ChatScreen> {
     _messageController.clear();
   }
 
+  void _newConversation() {
+    context.read<ChatBloc>().add(const ResetChat());
+  }
+
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const ChatAppBar(),
-      body: BlocConsumer<ChatBloc, ChatState>(
+      appBar: ChatAppBar(onNewConversation: _newConversation),
+      body: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, authState) {
+          final user = authState is AuthSuccess ? authState.user : null;
+          final userName = user?.prenom ?? '';
+
+          return BlocConsumer<ChatBloc, ChatState>(
         listener: (context, state) {
           if (state is ChatLoaded) _scrollToBottom();
         },
@@ -62,35 +73,38 @@ class _ChatScreenState extends State<ChatScreen> {
           return Column(
             children: [
               Expanded(
-                child: messages.isEmpty
-                    ? const WelcomePlaceholder()
-                    : ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
-                        itemCount: messages.length,
-                        itemBuilder: (context, index) {
-                          final msg = messages[index];
-                          final isUser = msg.role == MessageRole.user;
-                          return isUser
-                              ? UserBubble(message: msg)
-                              : AssistantBubble(message: msg);
-                        },
-                      ),
+                child: ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 12),
+                  // +1 pour le WelcomePlaceholder en index 0
+                  itemCount: messages.length + 1,
+                  itemBuilder: (context, index) {
+                    // Index 0 → toujours le message de bienvenue
+                    if (index == 0) {
+                      return WelcomePlaceholder(userName: userName);
+                    }
+
+                    // Index 1..n → vrais messages (décalage de 1)
+                    final msg = messages[index - 1];
+                    final isUser = msg.role == MessageRole.user;
+                    return isUser
+                        ? UserBubble(message: msg, user: user)
+                        : AssistantBubble(message: msg);
+                  },
+                ),
               ),
               ChatInputBar(
                 controller: _messageController,
                 onSend: _sendMessage,
-                onAttach: () {
-                  // TODO: Implémenter la pièce jointe
-                },
-                onVoice: () {
-                  // TODO: Implémenter la saisie vocale
-                },
+                onAttach: () {},
+                onVoice: () {},
               ),
             ],
           );
         },
+      );
+      },
       ),
     );
   }

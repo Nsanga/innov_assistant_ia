@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_assistant_ia/core/constants/app_colors.dart';
+import 'package:mobile_assistant_ia/core/di/injection.dart';
+import 'package:mobile_assistant_ia/features/chat/presentation/bloc/chat_bloc.dart';
+import 'package:mobile_assistant_ia/features/agenda/presentation/bloc/agenda_bloc.dart';
 
 class AppShell extends StatefulWidget {
   final Widget child;
@@ -23,21 +27,22 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: widget.child,
-      bottomNavigationBar: _InovBottomNav(
-        currentIndex: _currentIndex,
-        onTap: _onTabTapped,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<ChatBloc>(create: (_) => getIt<ChatBloc>()),
+        BlocProvider<AgendaBloc>(create: (_) => getIt<AgendaBloc>()),
+      ],
+      child: Scaffold(
+        body: widget.child,
+        bottomNavigationBar: _InovBottomNav(
+          currentIndex: _currentIndex,
+          onTap: _onTabTapped,
+        ),
       ),
     );
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Custom bottom navigation — design Inov pixel-perfect
-// Onglet actif : fond noir arrondi sur l'icône + label bold
-// Badge de notification : cercle bleu sur l'icône Chat
-// ─────────────────────────────────────────────────────────────────────────────
 class _InovBottomNav extends StatelessWidget {
   const _InovBottomNav({
     required this.currentIndex,
@@ -54,24 +59,24 @@ class _InovBottomNav extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(
-          top: BorderSide(color: AppColors.border, width: 0.5),
-        ),
+        border: Border(top: BorderSide(color: AppColors.border, width: 0.5)),
       ),
       child: SafeArea(
         top: false,
         child: SizedBox(
           height: 64,
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _NavItem(
                 index: 0,
                 currentIndex: currentIndex,
                 onTap: onTap,
                 icon: Icons.chat_bubble_outline_rounded,
-                activeIcon: Icons.chat_bubble_rounded,
+                activeIcon: Icons.chat_bubble_outline_rounded,
                 label: 'Chat',
-                badgeCount: chatBadgeCount,
+                // badge seulement si onglet inactif
+                badgeCount: currentIndex != 0 ? chatBadgeCount : 0,
               ),
               _NavItem(
                 index: 1,
@@ -86,7 +91,7 @@ class _InovBottomNav extends StatelessWidget {
                 currentIndex: currentIndex,
                 onTap: onTap,
                 icon: Icons.person_outline_rounded,
-                activeIcon: Icons.person_rounded,
+                activeIcon: Icons.person_outline_rounded,
                 label: 'Profil',
               ),
             ],
@@ -120,74 +125,84 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => onTap(index),
-        behavior: HitTestBehavior.opaque,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Icône avec fond noir si actif
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeInOut,
-                  width: 44,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: isActive ? AppColors.navActive : Colors.transparent,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Icon(
-                    isActive ? activeIcon : icon,
-                    size: 22,
-                    color: isActive ? Colors.white : AppColors.navInactive,
-                  ),
-                ),
-
-                // Badge notification
-                if (badgeCount > 0)
-                  Positioned(
-                    top: -4,
-                    right: -2,
-                    child: Container(
-                      width: 18,
-                      height: 18,
-                      decoration: const BoxDecoration(
-                        color: AppColors.primary,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          badgeCount > 9 ? '9+' : '$badgeCount',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
+    return GestureDetector(
+      onTap: () => onTap(index),
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Icône — fond noir pill + shadow bleue si actif
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut,
+                width: 48,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: isActive ? AppColors.navActive : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: isActive
+                      ? [
+                          BoxShadow(
+                            color: AppColors.primary.withOpacity(0.35),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
                           ),
+                        ]
+                      : [],
+                ),
+                child: Icon(
+                  isActive ? activeIcon : icon,
+                  size: 22,
+                  // icône active en bleu ciel, inactive en gris
+                  color: isActive
+                      ? const Color(0xFF60A5FA) // bleu ciel
+                      : AppColors.navInactive,
+                ),
+              ),
+
+              // Badge — uniquement si inactif
+              if (badgeCount > 0)
+                Positioned(
+                  top: -4,
+                  right: -4,
+                  child: Container(
+                    width: 18,
+                    height: 18,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        badgeCount > 9 ? '9+' : '$badgeCount',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
                   ),
-              ],
-            ),
+                ),
+            ],
+          ),
 
-            const SizedBox(height: 4),
+          const SizedBox(height: 4),
 
-            // Label
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 200),
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-                color: isActive ? AppColors.navActive : AppColors.navInactive,
-              ),
-              child: Text(label),
+          // Label
+          AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 200),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+              color: isActive ? AppColors.navActive : AppColors.navInactive,
             ),
-          ],
-        ),
+            child: Text(label),
+          ),
+        ],
       ),
     );
   }

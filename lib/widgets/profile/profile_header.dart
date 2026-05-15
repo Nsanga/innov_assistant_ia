@@ -40,7 +40,7 @@ class ProfileHeader extends StatelessWidget {
             width: 72,
             height: 72,
             decoration: BoxDecoration(
-              color: AppColors.primary,
+              gradient: AppColors.assistantAvatarGradient, // Ajout du gradient ici aussi
               borderRadius: BorderRadius.circular(20),
             ),
             child: Center(
@@ -106,21 +106,37 @@ class ProfileHeader extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              // + Action (filled bleu)
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: onAction,
-                  icon: const Icon(Icons.add, size: 16),
-                  label: const Text('Action',
-                      style: TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.w600)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+              // Action (gradient button)
+              Expanded( // ✅ Ajouter Expanded ici
+                child: Container(
+                  height: 48, // ✅ Supprimer width: double.infinity
+                  decoration: BoxDecoration(
+                    gradient: AppColors.assistantAvatarGradient,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: onAction,
+                      borderRadius: BorderRadius.circular(12),
+                      child: const Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.add, size: 16, color: Colors.white),
+                            SizedBox(width: 8),
+                            Text(
+                              'Action',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),

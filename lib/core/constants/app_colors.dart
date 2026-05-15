@@ -48,10 +48,46 @@ class AppColors {
 
   // ── Chat ───────────────────────────────────────────────────────────────────
   /// Bulle utilisateur
-  static const chatUser = Color(0xFF2563EB);
+  static const chatUser = Color(0xFF0066FF);
 
   /// Fond bulle assistant
   static const chatAssistant = Color(0xFFF1F5F9);
+  static const assistantAvatarGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xFF0066FF), // 0%
+      Color(0xFF0071FF), // 7.69%
+      Color(0xFF007BFF), // 15.38%
+      Color(0xFF0085FF), // 23.08%
+      Color(0xFF008FFF), // 30.77%
+      Color(0xFF0099FF), // 38.46%
+      Color(0xFF00A2FF), // 46.15%
+      Color(0xFF00ABFF), // 53.85%
+      Color(0xFF00B4FF), // 61.54%
+      Color(0xFF00BDFF), // 69.23%
+      Color(0xFF00C6FF), // 76.92%
+      Color(0xFF00CFFF), // 84.62%
+      Color(0xFF00D7FF), // 92.31%
+      Color(0xFF00E0FF), // 100%
+    ],
+    stops: [
+      0.0,
+      0.0769,
+      0.1538,
+      0.2308,
+      0.3077,
+      0.3846,
+      0.4615,
+      0.5385,
+      0.6154,
+      0.6923,
+      0.7692,
+      0.8462,
+      0.9231,
+      1.0,
+    ],
+  );
 
   // ── Bottom navigation ──────────────────────────────────────────────────────
   /// Tab actif (fond noir de l'icône active)

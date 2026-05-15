@@ -21,7 +21,7 @@ class AssistantBubble extends StatelessWidget {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: AppColors.primary,
+              gradient: AppColors.assistantAvatarGradient,
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(Icons.auto_awesome_rounded,

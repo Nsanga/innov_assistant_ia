@@ -1,11 +1,31 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../features/chat/data/models/chat_message.dart';
+import '../../features/auth/data/models/user_model.dart';
 
 class UserBubble extends StatelessWidget {
-  const UserBubble({super.key, required this.message});
-  
+  const UserBubble({
+    super.key,
+    required this.message,
+    this.user,
+  });
+
   final ChatMessage message;
+  final UserModel? user;
+
+  // Gérer le cas où user est null
+  String get _initials {
+    if (user == null) return 'U'; // Valeur par défaut si pas d'utilisateur
+    
+    final fullName = user!.fullName;
+    if (fullName.isEmpty) return 'U';
+    
+    final parts = fullName.trim().split(' ');
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return fullName[0].toUpperCase();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,13 +69,13 @@ class UserBubble extends StatelessWidget {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: AppColors.textPrimary,
+                  color: AppColors.primary,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
-                    'JK',
-                    style: TextStyle(
+                    _initials,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
